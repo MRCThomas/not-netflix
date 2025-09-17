@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { View, StyleSheet, RefreshControl } from 'react-native';
-import { getPopularMovies } from '../services/api';
-import FilmList from '../components/FilmList';
-import Loading from '../components/Loading';
-import { useTheme } from '../contexts/ThemeContext';
-import { useTranslation } from '../i18n/i18n';
+import React, { useState, useEffect, useCallback } from "react";
+import { View, StyleSheet, RefreshControl } from "react-native";
+import { getPopularMovies } from "../services/api";
+import FilmList from "../components/FilmList";
+import Loading from "../components/Loading";
+import { useTheme } from "../contexts/ThemeContext";
+import { useTranslation } from "../i18n/i18n";
 
 const HomeScreen = ({ navigation }) => {
   const [films, setFilms] = useState([]);
@@ -13,37 +13,43 @@ const HomeScreen = ({ navigation }) => {
   const [loadingMore, setLoadingMore] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
-  
+
   const { colors } = useTheme();
   const { t, language } = useTranslation();
 
-  const fetchFilms = useCallback(async (pageNumber = 1, refresh = false) => {
-    try {
-      if (pageNumber === 1) {
-        setLoading(true);
-      } else {
-        setLoadingMore(true);
+  const fetchFilms = useCallback(
+    async (pageNumber = 1, refresh = false) => {
+      try {
+        if (pageNumber === 1) {
+          setLoading(true);
+        } else {
+          setLoadingMore(true);
+        }
+
+        const data = await getPopularMovies(
+          pageNumber,
+          language === "fr" ? "fr-FR" : "en-US"
+        );
+
+        if (pageNumber === 1 || refresh) {
+          setFilms(data?.results ?? []);
+        } else {
+          setFilms((prevFilms) => [...prevFilms, ...(data?.results ?? [])]);
+        }
+
+        setPage(pageNumber);
+        setError(null);
+      } catch (err) {
+        console.error("Error fetching films:", err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+        setLoadingMore(false);
+        setRefreshing(false);
       }
-      
-      const data = await getPopularMovies(pageNumber, language === 'fr' ? 'fr-FR' : 'en-US');
-      
-      if (pageNumber === 1 || refresh) {
-        setFilms(data.results);
-      } else {
-        setFilms(prevFilms => [...prevFilms, ...data.results]);
-      }
-      
-      setPage(pageNumber);
-      setError(null);
-    } catch (err) {
-      console.error('Error fetching films:', err);
-      setError(err.message);
-    } finally {
-      setLoading(false);
-      setLoadingMore(false);
-      setRefreshing(false);
-    }
-  }, [language]);
+    },
+    [language]
+  );
 
   useEffect(() => {
     fetchFilms();
@@ -61,14 +67,14 @@ const HomeScreen = ({ navigation }) => {
   };
 
   const handleFilmPress = (movie) => {
-    navigation.navigate('FilmDetail', { 
+    navigation.navigate("FilmDetail", {
       id: movie.id,
-      title: movie.title 
+      title: movie.title,
     });
   };
 
   if (loading && !refreshing) {
-    return <Loading message={t('common.loading')} />;
+    return <Loading message={t("common.loading")} />;
   }
 
   return (
@@ -78,7 +84,7 @@ const HomeScreen = ({ navigation }) => {
         onFilmPress={handleFilmPress}
         onEndReached={handleLoadMore}
         loadingMore={loadingMore}
-        noResultsMessage={error ? t('common.error') : t('home.noMovies')}
+        noResultsMessage={error ? t("common.error") : t("home.noMovies")}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}

@@ -56,6 +56,7 @@ export default {
     trailer: 'Bande-annonce',
     watchTrailer: 'Voir la bande-annonce',
     noTrailer: 'Aucune bande-annonce disponible',
+    noOverview: 'Aucun synopsis disponible',
   },
   common: {
     cancel: 'Annuler',
